@@ -1,0 +1,298 @@
+
+# Credenciais do Google Sheets 
+credentials.json
+config.json
+*.json.bak
+service-account-*.json
+
+# Variáveis de ambiente
+.env
+.env.local
+.env.*.local
+
+# Chaves e tokens
+*.key
+*.pem
+*.p12
+
+# Pasta de saída com CSVs gerados
+output/
+output/**
+
+# Arquivos CSV temporários
+*.csv
+ajustes_transpostos_*.csv
+bdi_*.csv
+dados_*.csv
+temp_*.csv
+
+# Logs do sistema
+logs/
+logs/**
+*.log
+*.log.*
+
+# Caches de dados
+cache/
+.cache/
+data_cache/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+
+# Translations
+*.mo
+*.pot
+
+# Django stuff:
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Flask stuff:
+instance/
+.webassets-cache
+
+# Scrapy stuff:
+.scrapy
+
+# Sphinx documentation
+docs/_build/
+
+# PyBuilder
+target/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
+
+# pyenv
+.python-version
+
+# pipenv
+Pipfile.lock
+
+# PEP 582
+__pypackages__/
+
+# Celery stuff
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath parsed files
+*.sage.py
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# Visual Studio Code
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# Pre-commit hooks
+.pre-commit-config.yaml.bak
+
+# PyCharm
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+
+# Sublime Text
+*.tmlanguage.cache
+*.tmPreferences.cache
+*.stTheme.cache
+*.sublime-workspace
+*.sublime-project
+
+# Vim
+[._]*.s[a-v][a-z]
+[._]*.sw[a-p]
+[._]s[a-rt-v][a-z]
+[._]ss[a-gi-z]
+[._]sw[a-p]
+Session.vim
+Temporary Items
+.netrwhist
+*~
+tags
+[._]*.un~
+
+# Arquivos temporários do projeto
+temp/
+tmp/
+teste_*.py
+exemplo_*.py
+debug_*.py
+scratch_*.py
+
+# Arquivos de backup
+*.bak
+*.backup
+*.old
+*.orig
+*~
+
+# Arquivos de configuração temporária
+config_temp.json
+config_local.json
+config_test.json
+
+# Arquivos de dados intermediários
+raw_data/
+processed_data/
+intermediate/
+
+# Relatórios gerados
+relatorios/
+reports/
+*.xlsx
+*.xls
+
+# Plots e gráficos
+plots/
+graficos/
+*.png
+*.jpg
+*.jpeg
+*.pdf
+
+# Arquivos de debug específicos
+debug_extractor.py
+debug_transformer.py
+debug_loader.py
+teste_api.py
+teste_conexao.py
+
+# Arquivos importantes que devem ser commitados
+!README.md
+!requirements.txt
+!config.json.example
+!.gitignore
+!src/
+!main.py
+
+# Exemplo de configuração (sem dados sensíveis)
+!config.example.json

@@ -1,0 +1,9 @@
+{
+  "product_name": "FatOx",
+  "start_date": "2025-08-01",
+  "end_date": "2025-08-21",
+  "output_folder": "output",
+  "google_credentials": "credentials.json",
+  "spreadsheet_id": "SUBSTITUA_PELO_ID_DA_SUA_PLANILHA",
+  "sheet_name": "Dados_B3"
+}
