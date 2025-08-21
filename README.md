@@ -13,14 +13,7 @@ This repository brings together a curated selection of my top projects, each wit
 - **Data Science & Machine Learning**: Predictive models, deep learning, and statistical analysis.
 - **SQL & Analytics**: Advanced queries, business intelligence, and reporting.
 - **Statistics**: Exploratory data analysis and hypothesis testing.
-
-## 🌟 Featured Projects
-- [Dashboards/Looker/sales_dashboard.md](Dashboards/Looker/sales_dashboard.md): Sales dashboard with KPIs, insights, and interactive visualizations.
-- [Big_Data/Spark/](Big_Data/Spark/): Scalable data processing with Spark and Airflow.
-- [Machine_Learning/](Machine_Learning/): Predictive modeling and ML pipelines.
-- [Data_Engineering/](Data_Engineering/ETL_B3): ETL and data automation projects.
-- [SQL/](SQL/): Advanced SQL queries and analytics.
-
+- 
 ## 📂 Repository Structure
 - `Big_Data/` — Big Data and distributed processing
 - `Cloud/` — Cloud computing projects
