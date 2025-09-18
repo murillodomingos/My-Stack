@@ -33,9 +33,20 @@ class CotacaoDataProcessor:
         if not value or value == '' or 'Ver histórico' in value or 'Atualizado' in value:
             return None
         
-        # Remove caracteres especiais e converte
-        clean_value = re.sub(r'[^\d,.-]', '', str(value))
-        clean_value = clean_value.replace(',', '.')
+        # Converter para string
+        clean_value = str(value).strip()
+        
+        # Remover sinais de + no início
+        clean_value = clean_value.lstrip('+')
+        
+        # Para números brasileiros (ex: 1.246,72), trocar vírgula por ponto
+        # e remover pontos de milhares se houver vírgula
+        if ',' in clean_value:
+            # Se tem vírgula, os pontos são separadores de milhares
+            clean_value = clean_value.replace('.', '').replace(',', '.')
+        
+        # Remover caracteres não numéricos exceto ponto e sinal de menos
+        clean_value = re.sub(r'[^\d.-]', '', clean_value)
         
         try:
             return float(clean_value)
@@ -44,17 +55,19 @@ class CotacaoDataProcessor:
     
     def classify_table(self, table_name: str, sample_data: List[Dict]) -> str:
         """Classifica o tipo de tabela baseado no nome e estrutura"""
-        table_name = table_name.lower()
+        table_name_lower = table_name.lower()
         
-        if 'reposição' in table_name or 'reposicao' in table_name:
+        if 'reposição' in table_name_lower or 'reposicao' in table_name_lower:
             return 'reposicao'
-        elif 'chicago' in table_name or 'new york' in table_name or 'brasil (b3)' in table_name:
+        elif 'chicago' in table_name_lower or 'new york' in table_name_lower:
             return 'mercados_externos'
-        elif 'pregão regular' in table_name or 'b3' in table_name:
+        elif 'pregão regular' in table_name_lower or ('pregão' in table_name_lower and 'b3' in table_name_lower):
             return 'contratos_futuros'
-        elif any('estado' in str(row.get('Estado', '')).lower() for row in sample_data if row.get('Estado')):
+        elif (any('estado' in str(row.get('Estado', '')).lower() for row in sample_data if row.get('Estado')) or
+              any('município' in str(row.get('column_0', '')).lower() or 'municipio' in str(row.get('column_0', '')).lower() or 'munípicio' in str(row.get('column_0', '')).lower() for row in sample_data if row.get('column_0'))):
             return 'indicadores_estados'
         else:
+            # Indicadores simples (inclui "Indicador do Boi Gordo Esalq / B3")
             return 'indicadores_simples'
     
     def process_raw_data(self, raw_data: Dict[str, Any]) -> Dict[str, pd.DataFrame]:
@@ -120,11 +133,13 @@ class CotacaoDataProcessor:
             
             # Extrair valores baseado nas chaves disponíveis
             for key, value in row.items():
-                if 'R$' in key or 'vista' in key or 'prazo' in key or 'Valor' in key:
+                key_lower = key.lower()
+                if ('r$' in key_lower or 'vista' in key_lower or 'prazo' in key_lower or 
+                    'valor' in key_lower or 'preço' in key_lower or 'preco' in key_lower):
                     price_brl = self.clean_numeric_value(value)
-                elif 'Variação' in key or '(%)' in key:
+                elif 'variação' in key_lower or 'variacao' in key_lower or '(%)' in key:
                     variation_pct = self.clean_numeric_value(value)
-                elif 'U$' in key or 'US$' in key:
+                elif 'u$' in key_lower or 'us$' in key_lower:
                     price_usd = self.clean_numeric_value(value)
             
             if price_brl is not None:
@@ -139,12 +154,13 @@ class CotacaoDataProcessor:
         return pd.DataFrame(rows) if rows else pd.DataFrame(columns=self.schemas['indicadores_simples'])
     
     def _process_indicadores_estados(self, table_name: str, data: List[Dict], date: str) -> pd.DataFrame:
-        """Processa indicadores por estado"""
+        """Processa indicadores por estado/município"""
         rows = []
         
         for row in data:
-            state = row.get('Estado', '')
-            if not state or not isinstance(state, str):
+            # Tentar pegar Estado ou Município (column_0 para IMEA)
+            state = row.get('Estado', '') or row.get('column_0', '')
+            if not state or not isinstance(state, str) or state.lower() in ['município', 'municipio', 'munípicio']:
                 continue
             
             price_brl = None
@@ -152,11 +168,13 @@ class CotacaoDataProcessor:
             price_usd = None
             
             for key, value in row.items():
-                if 'R$' in key or 'Preço' in key:
+                key_lower = key.lower()
+                if ('r$' in key_lower or 'preço' in key_lower or 'preco' in key_lower or 
+                    'média' in key_lower or 'media' in key_lower or 'column_1' in key_lower):
                     price_brl = self.clean_numeric_value(value)
-                elif 'Variação' in key:
+                elif ('variação' in key_lower or 'variacao' in key_lower or 'column_2' in key_lower):
                     variation_pct = self.clean_numeric_value(value)
-                elif 'U$' in key or 'US$' in key:
+                elif 'u$' in key_lower or 'us$' in key_lower:
                     price_usd = self.clean_numeric_value(value)
             
             if price_brl is not None:
@@ -259,7 +277,23 @@ class CotacaoDataProcessor:
         
         return pd.DataFrame(rows) if rows else pd.DataFrame(columns=self.schemas['mercados_externos'])
     
-    def save_to_parquet(self, processed_dfs: Dict[str, pd.DataFrame], date: str):
+    def clean_table_name_for_filename(self, table_name: str) -> str:
+        """Limpa o nome da tabela para usar como nome de arquivo"""
+        import re
+        
+        # Remover caracteres especiais e substituir por underscore
+        clean_name = re.sub(r'[^\w\s-]', '', table_name)  # Remove caracteres especiais exceto espaços e hífens
+        clean_name = re.sub(r'[\s-]+', '_', clean_name)   # Substitui espaços e hífens por underscore
+        clean_name = clean_name.strip('_')                # Remove underscores no início e fim
+        clean_name = clean_name.lower()                   # Converte para minúsculas
+        
+        # Limitar o tamanho do nome para evitar problemas no sistema de arquivos
+        if len(clean_name) > 50:
+            clean_name = clean_name[:50].rstrip('_')
+        
+        return clean_name
+
+    def save_to_parquet(self, processed_dfs: Dict[str, pd.DataFrame], date: str, verbose: bool = False):
         """Salva DataFrames em arquivos Parquet particionados"""
         year = date[:4]
         month = date[5:7]
@@ -268,18 +302,26 @@ class CotacaoDataProcessor:
             if df.empty:
                 continue
             
-            # Criar estrutura de diretórios por tipo/ano/mês
+            # Extrair nome da tabela original do table_key
+            # table_key formato: "tipo_NomeDaTabela"
+            table_name_original = '_'.join(table_key.split('_')[2:]) if len(table_key.split('_')) > 2 else table_key.split('_')[1]
+            
+            # Limpar nome da tabela para usar como nome de pasta
+            clean_table_name = self.clean_table_name_for_filename(table_name_original)
+            
+            # Criar estrutura de diretórios: tipo/ano/mês/nome_da_tabela
             table_type = table_key.split('_')[0]
-            output_dir = self.parquet_dir / table_type / year / month
+            output_dir = self.parquet_dir / table_type / year / month / clean_table_name
             output_dir.mkdir(parents=True, exist_ok=True)
             
-            # Nome do arquivo com data
+            # Nome do arquivo simples com apenas a data
             filename = f"cotacoes_{date}.parquet"
             filepath = output_dir / filename
             
             # Salvar como Parquet
             df.to_parquet(filepath, index=False)
-            print(f"Salvo: {filepath} ({len(df)} registros)")
+            if verbose:
+                print(f"Salvo: {filepath} ({len(df)} registros)")
     
     def load_date_range(self, start_date: str, end_date: str, table_types: List[str] = None) -> Dict[str, pd.DataFrame]:
         """Carrega dados de um intervalo de datas"""
@@ -320,8 +362,17 @@ class CotacaoDataProcessor:
         """Retorna estatísticas de armazenamento"""
         stats = {}
         
-        for table_type in self.schemas.keys():
-            type_dir = self.parquet_dir / table_type
+        # Mapear tipos de diretório para schemas
+        directory_types = {
+            'indicadores': ['indicadores_simples', 'indicadores_estados'],
+            'contratos': ['contratos_futuros'],
+            'reposicao': ['reposicao'],
+            'mercados': ['mercados_externos']
+        }
+        
+        # Buscar diretórios reais
+        for dir_name in ['indicadores', 'contratos', 'reposicao', 'mercados']:
+            type_dir = self.parquet_dir / dir_name
             if not type_dir.exists():
                 continue
             
@@ -332,10 +383,11 @@ class CotacaoDataProcessor:
                 file_count += 1
                 total_size += parquet_file.stat().st_size
             
-            stats[table_type] = {
-                'files': file_count,
-                'size_mb': round(total_size / (1024 * 1024), 2)
-            }
+            if file_count > 0:
+                stats[dir_name] = {
+                    'files': file_count,
+                    'size_mb': round(total_size / (1024 * 1024), 2)
+                }
         
         return stats
 
